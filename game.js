@@ -17,6 +17,21 @@ class Player {
 		this.accel = 0.05;
 		this.rotation = 0;
 	}
+
+	wrapCoords(){
+		if(this.x > canvas.width){
+			this.x = 0;
+		}
+		if(this.x < 0){
+			this.x = canvas.width;
+		}
+		if(this.y > canvas.height){
+			this.y = 0;
+		}
+		if(this.y < 0){
+			this.y = canvas.height;
+		}
+	}
 	
 	draw(){
 		ctx.beginPath();
@@ -34,30 +49,23 @@ class Player {
 		ctx.closePath();
 	}
 	
-	wrapCoords(){
-		if(this.x > canvas.width){
-			this.x = 0;
-		}
-		if(this.x < 0){
-			this.x = canvas.width;
-		}
-		if(this.y > canvas.height){
-			this.y = 0;
-		}
-		if(this.y < 0){
-			this.y = canvas.height;
-		}
-	}
-	
 	update(){
 		if(wDown){
-			this.dx += Math.sin(this.rotation) * this.accel;
-			this.dy += -Math.cos(this.rotation) * this.accel;
+			var nor = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
+			// If the velocity is over 5, set it back to 5. 
+			if(Math.abs(nor) > 5){
+				this.dx = this.dx * 1/nor * 5;
+				this.dy = this.dy * 1/nor * 5;
+			}
+			else {
+				this.dx += Math.sin(this.rotation) * this.accel;
+				this.dy += -Math.cos(this.rotation) * this.accel;
+			}
 		}
-		if(aDown){
+		if(aDown){ // Rotate the ship left.
 			this.rotation -= 0.05;
 		}
-		if(dDown){
+		if(dDown){ // Rotate the ship right.
 			this.rotation += 0.05;
 		}
 		
@@ -106,8 +114,9 @@ function animate(){
 	ctx.fillStyle = "#1c292f";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 	
-	player.draw();
 	player.update();
+
+	player.draw();
 }
 
 animate();
