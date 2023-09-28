@@ -2,10 +2,60 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 var wDown, aDown, dDown, spaceDown = false;
+var canShoot = true;
+var bullets = [];
 
 function drawSquare(x, y, length, color){
     ctx.fillStyle = color;
     ctx.fillRect(x, y, length, length);
+}
+
+class Bullet {
+	constructor(x, y, rotation){
+		this.x = x;
+		this.y = y;
+		this.rotation = rotation;
+		this.accel = 7;
+		this.index;
+	}
+
+	deleteOutOfBounds(){
+		if(this.x > canvas.width){
+			delete this;
+		}
+		if(this.x < 0){
+			delete this;
+		}
+		if(this.y > canvas.height){
+			delete this;
+		}
+		if(this.y < 0){
+			delete this;
+		}
+	}
+
+	draw(){
+		ctx.beginPath();
+		ctx.save();
+		ctx.translate(this.x, this.y);
+		ctx.rotate(this.rotation);
+		ctx.moveTo(0, -30);
+		ctx.lineTo(-20, 20);
+		ctx.lineTo(0, 10);
+		ctx.lineTo(20, 20);
+		ctx.lineTo(0, -30);
+		ctx.restore();
+		ctx.strokeStyle = "white";
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	update(){
+		this.x += Math.sin(this.rotation) * this.accel;
+		this.y += -Math.cos(this.rotation) * this.accel;
+
+		this.deleteOutOfBounds();
+	}
 }
 
 class Player {
@@ -31,6 +81,10 @@ class Player {
 		if(this.y < 0){
 			this.y = canvas.height;
 		}
+	}
+
+	shootBullet(){
+		bullets.push(new Bullet(this.x, this.y, this.rotation));
 	}
 	
 	draw(){
@@ -67,6 +121,14 @@ class Player {
 		}
 		if(dDown){ // Rotate the ship right.
 			this.rotation += 0.05;
+		}
+		if(spaceDown){
+			// Limits the ammout the player can shoot. 
+			if(canShoot){
+				this.shootBullet();
+				canShoot = false;
+				setTimeout(function(){canShoot = true}, 250);
+			}
 		}
 		
 		this.x += this.dx;
@@ -114,9 +176,34 @@ function animate(){
 	ctx.fillStyle = "#1c292f";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 	
+
 	player.update();
+	// update all the bullets. 
+	for(var i = 0; i < bullets.length; i++){
+		bullets[i].update();
+		if(bullets[i].x > canvas.width){
+			bullets.splice(i, 1);
+			continue;
+		}
+		if(bullets[i].x < 0){
+			bullets.splice(i, 1);
+			continue;
+		}
+		if(bullets[i].y > canvas.height){
+			bullets.splice(i, 1);
+			continue;
+		}
+		if(bullets[i].y < 0){
+			bullets.splice(i, 1);
+			continue;
+		}
+	}
 
 	player.draw();
+	for(var i = 0; i < bullets.length; i++){
+		bullets[i].draw();
+	}
+	
 }
 
 animate();
