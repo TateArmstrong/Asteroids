@@ -10,6 +10,11 @@ function drawSquare(x, y, length, color){
     ctx.fillRect(x, y, length, length);
 }
 
+var mouse = {
+	x: 0,
+	y: 0
+}
+
 class Bullet {
 	constructor(x, y, rotation){
 		this.x = x;
@@ -39,15 +44,13 @@ class Bullet {
 		ctx.save();
 		ctx.translate(this.x, this.y);
 		ctx.rotate(this.rotation);
-		ctx.moveTo(0, -30);
-		ctx.lineTo(-20, 20);
-		ctx.lineTo(0, 10);
-		ctx.lineTo(20, 20);
-		ctx.lineTo(0, -30);
+		ctx.moveTo(-4, -10);
+		ctx.lineTo(-4, 10);
+		ctx.lineTo(4, 10);
+		ctx.lineTo(4, -10);
 		ctx.restore();
-		ctx.strokeStyle = "white";
-		ctx.stroke();
-		ctx.closePath();
+		ctx.fillStyle = "white";
+		ctx.fill();
 	}
 
 	update(){
@@ -104,6 +107,10 @@ class Player {
 	}
 	
 	update(){
+
+		// Rotates the ship to point to the mouse cursor. 
+		//this.rotation = Math.atan2(mouse.y - this.y, mouse.x - this.x) + Math.PI/2;
+
 		if(wDown){
 			var nor = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
 			// If the velocity is over 5, set it back to 5. 
@@ -165,6 +172,13 @@ document.addEventListener("keyup",
 			case 68: // D
 				dDown = false; break;
 		}
+	}
+);
+
+document.addEventListener("mousemove", 
+	function(e){
+		mouse.x = e.offsetX;
+		mouse.y = e.offsetY;
 	}
 );
 
