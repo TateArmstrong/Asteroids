@@ -5,6 +5,11 @@ var wDown, aDown, dDown, spaceDown = false;
 var canShoot = true;
 var bullets = [];
 
+const SHIP_SPEED = 0.05;
+const SHIP_ROTATION_SPEED = 0.05;
+const BULLET_SPEED = 7;
+const FIRE_RATE_INTERVAL = 250;
+
 function drawSquare(x, y, length, color){
     ctx.fillStyle = color;
     ctx.fillRect(x, y, length, length);
@@ -20,7 +25,7 @@ class Bullet {
 		this.x = x;
 		this.y = y;
 		this.rotation = rotation;
-		this.accel = 7;
+		this.accel = BULLET_SPEED;
 		this.index;
 	}
 
@@ -67,7 +72,7 @@ class Player {
         this.y = y;
         this.dx = 0;
         this.dy = 0;
-		this.accel = 0.05;
+		this.accel = SHIP_SPEED;
 		this.rotation = 0;
 	}
 
@@ -124,17 +129,17 @@ class Player {
 			}
 		}
 		if(aDown){ // Rotate the ship left.
-			this.rotation -= 0.05;
+			this.rotation -= SHIP_ROTATION_SPEED;
 		}
 		if(dDown){ // Rotate the ship right.
-			this.rotation += 0.05;
+			this.rotation += SHIP_ROTATION_SPEED;
 		}
 		if(spaceDown){
 			// Limits the ammout the player can shoot. 
 			if(canShoot){
 				this.shootBullet();
 				canShoot = false;
-				setTimeout(function(){canShoot = true}, 250);
+				setTimeout(function(){canShoot = true}, FIRE_RATE_INTERVAL);
 			}
 		}
 		
