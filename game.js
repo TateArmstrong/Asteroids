@@ -5,9 +5,10 @@ var wDown, aDown, dDown, spaceDown = false;
 var canShoot = true;
 var bullets = [];
 
-const SHIP_SPEED = 0.05;
-const SHIP_ROTATION_SPEED = 0.05;
-const BULLET_SPEED = 7;
+const SHIP_SPEED = 0.02;
+const MAX_SHIP_SPEED = 10;
+const SHIP_ROTATION_SPEED = 0.005;
+const BULLET_SPEED = 1;
 const FIRE_RATE_INTERVAL = 250;
 
 function drawSquare(x, y, length, color){
@@ -58,9 +59,9 @@ class Bullet {
 		ctx.fill();
 	}
 
-	update(){
-		this.x += Math.sin(this.rotation) * this.accel;
-		this.y += -Math.cos(this.rotation) * this.accel;
+	update(deltaTime){
+		this.x += Math.sin(this.rotation) * this.accel * deltaTime;
+		this.y += -Math.cos(this.rotation) * this.accel * deltaTime;
 
 		this.deleteOutOfBounds();
 	}
@@ -111,7 +112,7 @@ class Player {
 		ctx.closePath();
 	}
 	
-	update(){
+	update(deltaTime){
 
 		// Rotates the ship to point to the mouse cursor. 
 		//this.rotation = Math.atan2(mouse.y - this.y, mouse.x - this.x) + Math.PI/2;
@@ -119,20 +120,20 @@ class Player {
 		if(wDown){
 			var nor = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
 			// If the velocity is over 5, set it back to 5. 
-			if(Math.abs(nor) > 5){
-				this.dx = this.dx * 1/nor * 5;
-				this.dy = this.dy * 1/nor * 5;
+			if(Math.abs(nor) > MAX_SHIP_SPEED){
+				this.dx = this.dx * 1/nor * MAX_SHIP_SPEED;
+				this.dy = this.dy * 1/nor * MAX_SHIP_SPEED;
 			}
 			else {
-				this.dx += Math.sin(this.rotation) * this.accel;
-				this.dy += -Math.cos(this.rotation) * this.accel;
+				this.dx += Math.sin(this.rotation) * this.accel * deltaTime;
+				this.dy += -Math.cos(this.rotation) * this.accel * deltaTime;
 			}
 		}
 		if(aDown){ // Rotate the ship left.
-			this.rotation -= SHIP_ROTATION_SPEED;
+			this.rotation -= SHIP_ROTATION_SPEED * deltaTime;
 		}
 		if(dDown){ // Rotate the ship right.
-			this.rotation += SHIP_ROTATION_SPEED;
+			this.rotation += SHIP_ROTATION_SPEED * deltaTime;
 		}
 		if(spaceDown){
 			// Limits the ammout the player can shoot. 
@@ -189,40 +190,50 @@ document.addEventListener("mousemove",
 
 player = new Player(100, 100);
 
-function animate(){
-	requestAnimationFrame(animate);
-	
-	ctx.fillStyle = "#1c292f";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-	
+var lastTime;
+var requiredElapsed = 1000 / 60; // desired interval is 60fps
 
-	player.update();
-	// update all the bullets. 
-	for(var i = 0; i < bullets.length; i++){
-		bullets[i].update();
-		if(bullets[i].x > canvas.width){
-			bullets.splice(i, 1);
-			continue;
-		}
-		if(bullets[i].x < 0){
-			bullets.splice(i, 1);
-			continue;
-		}
-		if(bullets[i].y > canvas.height){
-			bullets.splice(i, 1);
-			continue;
-		}
-		if(bullets[i].y < 0){
-			bullets.splice(i, 1);
-			continue;
-		}
-	}
+requestAnimationFrame(loop);
 
-	player.draw();
-	for(var i = 0; i < bullets.length; i++){
-		bullets[i].draw();
-	}
-	
+function loop(now) {
+    requestAnimationFrame(loop);
+    
+    if (!lastTime) { lastTime = now; }
+    var elapsed = now - lastTime;
+
+    if (elapsed > requiredElapsed) {
+        // do stuff
+		ctx.fillStyle = "#1c292f";
+    	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		player.update(elapsed);
+		// update all the bullets. 
+		for(var i = 0; i < bullets.length; i++){
+			bullets[i].update(elapsed);
+			if(bullets[i].x > canvas.width){
+				bullets.splice(i, 1);
+				continue;
+			}
+			if(bullets[i].x < 0){
+				bullets.splice(i, 1);
+				continue;
+			}
+			if(bullets[i].y > canvas.height){
+				bullets.splice(i, 1);
+				continue;
+			}
+			if(bullets[i].y < 0){
+				bullets.splice(i, 1);
+				continue;
+			}
+		}
+
+		player.draw();
+		for(var i = 0; i < bullets.length; i++){
+			bullets[i].draw();
+		}
+
+        lastTime = now;
+    }
+    
 }
-
-animate();
