@@ -24,6 +24,13 @@ function getRndInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
+// Returns true if a point is in a circle. 
+function isPointInCircle(cx, cy, r, px, py){
+	dist = Math.sqrt(Math.pow(px - cx, 2) + Math.pow(py - cy, 2));
+
+	return dist <= r;
+}
+
 var mouse = {
 	x: 0,
 	y: 0
@@ -163,7 +170,8 @@ class Rock {
 		this.x = x;
         this.y = y;
         this.rotation = Math.random() * 6.28319;
-		this.accel = 0.1
+		this.radius = 40;
+		this.accel = 0.1;
 	}
 
 	wrapCoords(){
@@ -183,7 +191,7 @@ class Rock {
 
 	draw(){
 		ctx.beginPath();
-		ctx.arc(this.x, this.y, 40, 0, 2 * Math.PI);
+		ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
 		ctx.fillStyle = "white";
 		ctx.fill();
 	}
@@ -280,6 +288,20 @@ function loop(now) {
 		}
 		for(var i = 0; i < rocks.length; i++){
 			rocks[i].update(elapsed);
+		}
+
+		// Collision Detection
+		for(var i = 0; i < bullets.length; i++){
+			for(var j = 0; j < rocks.length; j++){
+				var bullet = bullets[i];
+				var rock = rocks[j];
+
+				if(isPointInCircle(rock.x, rock.y, rock.radius, bullet.x, bullet.y)){
+					bullets.splice(i, 1);
+					rocks.splice(j, 1);
+					break;
+				}
+			}
 		}
 
 		// DRAW
