@@ -235,7 +235,7 @@ document.addEventListener("mousemove",
 
 player = new Player(width / 2, height / 2);
 
-// Randomly generate 5 rocks. 
+// Randomly generates 5 rocks. 
 for(var i = 0; i < 5; i++){
 	rocks.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
 }
@@ -256,6 +256,7 @@ function loop(now) {
 		ctx.fillStyle = "#1c292f";
     	ctx.fillRect(0, 0, width, height);
 
+		// UPDATE
 		player.update(elapsed);
 		// update all the bullets. 
 		for(var i = 0; i < bullets.length; i++){
@@ -281,6 +282,7 @@ function loop(now) {
 			rocks[i].update(elapsed);
 		}
 
+		// DRAW
 		player.draw();
 		for(var i = 0; i < bullets.length; i++){
 			bullets[i].draw();
