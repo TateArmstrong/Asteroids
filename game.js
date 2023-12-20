@@ -1,9 +1,13 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+var width = canvas.width;
+var height = canvas.height;
+
 var wDown, aDown, dDown, spaceDown = false;
 var canShoot = true;
 var bullets = [];
+var rocks = [];
 
 const SHIP_SPEED = 0.02;
 const MAX_SHIP_SPEED = 10;
@@ -14,6 +18,10 @@ const FIRE_RATE_INTERVAL = 250;
 function drawSquare(x, y, length, color){
     ctx.fillStyle = color;
     ctx.fillRect(x, y, length, length);
+}
+
+function getRndInteger(min, max) {
+	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
 var mouse = {
@@ -27,17 +35,16 @@ class Bullet {
 		this.y = y;
 		this.rotation = rotation;
 		this.accel = BULLET_SPEED;
-		this.index;
 	}
 
 	deleteOutOfBounds(){
-		if(this.x > canvas.width){
+		if(this.x > width){
 			delete this;
 		}
 		if(this.x < 0){
 			delete this;
 		}
-		if(this.y > canvas.height){
+		if(this.y > height){
 			delete this;
 		}
 		if(this.y < 0){
@@ -78,17 +85,17 @@ class Player {
 	}
 
 	wrapCoords(){
-		if(this.x > canvas.width){
+		if(this.x > width){
 			this.x = 0;
 		}
 		if(this.x < 0){
-			this.x = canvas.width;
+			this.x = width;
 		}
-		if(this.y > canvas.height){
+		if(this.y > height){
 			this.y = 0;
 		}
 		if(this.y < 0){
-			this.y = canvas.height;
+			this.y = height;
 		}
 	}
 
@@ -151,6 +158,44 @@ class Player {
 	}
 }
 
+class Rock {
+	constructor(x, y){
+		this.x = x;
+        this.y = y;
+        this.rotation = Math.random() * 6.28319;
+		this.accel = 0.1
+	}
+
+	wrapCoords(){
+		if(this.x > width){
+			this.x = 0;
+		}
+		if(this.x < 0){
+			this.x = width;
+		}
+		if(this.y > height){
+			this.y = 0;
+		}
+		if(this.y < 0){
+			this.y = height;
+		}
+	}
+
+	draw(){
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, 40, 0, 2 * Math.PI);
+		ctx.fillStyle = "white";
+		ctx.fill();
+	}
+
+	update(deltaTime){
+		this.x += Math.sin(this.rotation) * this.accel * deltaTime;
+		this.y += -Math.cos(this.rotation) * this.accel * deltaTime;
+
+		this.wrapCoords();
+	}
+}
+
 document.addEventListener("keydown", 
 	function(e){
 		switch(e.keyCode){
@@ -188,10 +233,15 @@ document.addEventListener("mousemove",
 	}
 );
 
-player = new Player(100, 100);
+player = new Player(width / 2, height / 2);
+
+// Randomly generate 5 rocks. 
+for(var i = 0; i < 5; i++){
+	rocks.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
+}
 
 var lastTime;
-var requiredElapsed = 1000 / 60; // desired interval is 60fps
+var requiredElapsed = 1000 / 90; // desired interval is 60fps
 
 requestAnimationFrame(loop);
 
@@ -204,13 +254,13 @@ function loop(now) {
     if (elapsed > requiredElapsed) {
         // do stuff
 		ctx.fillStyle = "#1c292f";
-    	ctx.fillRect(0, 0, canvas.width, canvas.height);
+    	ctx.fillRect(0, 0, width, height);
 
 		player.update(elapsed);
 		// update all the bullets. 
 		for(var i = 0; i < bullets.length; i++){
 			bullets[i].update(elapsed);
-			if(bullets[i].x > canvas.width){
+			if(bullets[i].x > width){
 				bullets.splice(i, 1);
 				continue;
 			}
@@ -218,7 +268,7 @@ function loop(now) {
 				bullets.splice(i, 1);
 				continue;
 			}
-			if(bullets[i].y > canvas.height){
+			if(bullets[i].y > height){
 				bullets.splice(i, 1);
 				continue;
 			}
@@ -227,10 +277,16 @@ function loop(now) {
 				continue;
 			}
 		}
+		for(var i = 0; i < rocks.length; i++){
+			rocks[i].update(elapsed);
+		}
 
 		player.draw();
 		for(var i = 0; i < bullets.length; i++){
 			bullets[i].draw();
+		}
+		for(var i = 0; i < rocks.length; i++){
+			rocks[i].draw();
 		}
 
         lastTime = now;
