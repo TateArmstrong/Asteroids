@@ -36,6 +36,24 @@ var mouse = {
 	y: 0
 }
 
+function drawPolygon(x, y, points) {
+	var angleBetweenPoints = (2 * Math.PI) / points;
+	var radius = 100;
+
+	ctx.beginPath();
+	ctx.save();
+	ctx.translate(x, y);
+	ctx.moveTo(0, -radius);
+	for(var i = 0; i < points; i++){
+		ctx.rotate(angleBetweenPoints);
+		ctx.lineTo(0, -radius);
+	}
+	ctx.restore();
+	ctx.strokeStyle = "white";
+	ctx.stroke();
+	ctx.closePath();
+}
+
 class Bullet {
 	constructor(x, y, rotation){
 		this.x = x;
@@ -260,7 +278,7 @@ function loop(now) {
     var elapsed = now - lastTime;
 
     if (elapsed > requiredElapsed) {
-        // do stuff
+		// Fill the background. 
 		ctx.fillStyle = "#1c292f";
     	ctx.fillRect(0, 0, width, height);
 
@@ -305,6 +323,7 @@ function loop(now) {
 		}
 
 		// DRAW
+		drawPolygon(width / 2, height / 2, 3);
 		player.draw();
 		for(var i = 0; i < bullets.length; i++){
 			bullets[i].draw();
