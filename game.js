@@ -59,12 +59,13 @@ function drawPolygon(x, y, numPoints, radius) {
 	ctx.closePath();
 }
 
-function drawRandomPolygon(x, y, numPoints, radius, radi) {
+function drawRandomPolygon(x, y, numPoints, radius, radi, rotation) {
 	var angleBetweenPoints = (2 * Math.PI) / numPoints;
 
 	ctx.beginPath();
 	ctx.save();
 	ctx.translate(x, y);
+	ctx.rotate(rotation);
 	ctx.moveTo(0, -radius);
 	for(var i = 0; i < numPoints - 1; i++){
 		ctx.rotate(angleBetweenPoints);
@@ -212,6 +213,8 @@ class Rock {
 		this.x = x;
         this.y = y;
         this.rotation = Math.random() * (Math.PI * 2);
+		this.drawRotation = this.rotation;
+		this.rotationSpeed = (Math.random() * 0.06) - 0.03;
 		this.radius = radius;
 		this.accel = 0.1; 
 		this.numPoints = numPoints;
@@ -243,12 +246,14 @@ class Rock {
 	}
 
 	draw(){
-		drawRandomPolygon(this.x, this.y, this.numPoints, this.radius, this.radi);
+		drawRandomPolygon(this.x, this.y, this.numPoints, this.radius, this.radi, this.drawRotation);
 	}
 
 	update(deltaTime){
 		this.x += Math.sin(this.rotation) * this.accel * deltaTime;
 		this.y += -Math.cos(this.rotation) * this.accel * deltaTime;
+
+		this.drawRotation += this.rotationSpeed;
 
 		this.wrapCoords();
 	}
