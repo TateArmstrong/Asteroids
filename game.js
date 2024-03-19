@@ -9,11 +9,17 @@ var canShoot = true;
 var bullets = [];
 var rocks = [];
 
+// Player ship control variables. 
 const SHIP_SPEED = 0.02;
 const MAX_SHIP_SPEED = 10;
 const SHIP_ROTATION_SPEED = 0.005;
 const BULLET_SPEED = 1;
 const FIRE_RATE_INTERVAL = 250;
+
+// Rock generation control variables. 
+const ROCK_RADIUS = 40; // Controls the size of rocks. 
+const ROCK_SIDES = 12; // Controls the number of sides the rocks have. 
+const ROCK_VARIATION = 20; // Controls how bumpy the rocks are. Weird results if larger than ROCK_RADIUS. 
 
 function drawSquare(x, y, length, color){
     ctx.fillStyle = color;
@@ -36,18 +42,36 @@ var mouse = {
 	y: 0
 }
 
-function drawPolygon(x, y, points) {
-	var angleBetweenPoints = (2 * Math.PI) / points;
-	var radius = 100;
+function drawPolygon(x, y, numPoints, radius) {
+	var angleBetweenPoints = (2 * Math.PI) / numPoints;
 
 	ctx.beginPath();
 	ctx.save();
 	ctx.translate(x, y);
 	ctx.moveTo(0, -radius);
-	for(var i = 0; i < points; i++){
+	for(var i = 0; i < numPoints; i++){
 		ctx.rotate(angleBetweenPoints);
 		ctx.lineTo(0, -radius);
 	}
+	ctx.restore();
+	ctx.strokeStyle = "white";
+	ctx.stroke();
+	ctx.closePath();
+}
+
+function drawRandomPolygon(x, y, numPoints, radius, radi) {
+	var angleBetweenPoints = (2 * Math.PI) / numPoints;
+
+	ctx.beginPath();
+	ctx.save();
+	ctx.translate(x, y);
+	ctx.moveTo(0, -radius);
+	for(var i = 0; i < numPoints - 1; i++){
+		ctx.rotate(angleBetweenPoints);
+		ctx.lineTo(0, -radi[i]);
+	}
+	ctx.rotate(angleBetweenPoints);
+	ctx.lineTo(0, -radius);
 	ctx.restore();
 	ctx.strokeStyle = "white";
 	ctx.stroke();
@@ -184,12 +208,23 @@ class Player {
 }
 
 class Rock {
-	constructor(x, y){
+	constructor(x, y, radius = ROCK_RADIUS, numPoints = ROCK_SIDES){
 		this.x = x;
         this.y = y;
-        this.rotation = Math.random() * 6.28319;
-		this.radius = 40;
-		this.accel = 0.1;
+        this.rotation = Math.random() * (Math.PI * 2);
+		this.radius = radius;
+		this.accel = 0.1; 
+		this.numPoints = numPoints;
+		this.radi = []
+
+		this.init();
+	}
+
+	init() {
+		this.radi.push(this.radius);
+		for(var i = 0; i < this.numPoints - 1; i++){
+			this.radi.push(this.radius + getRndInteger(-ROCK_VARIATION, ROCK_VARIATION));
+		}
 	}
 
 	wrapCoords(){
@@ -208,10 +243,7 @@ class Rock {
 	}
 
 	draw(){
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-		ctx.fillStyle = "white";
-		ctx.fill();
+		drawRandomPolygon(this.x, this.y, this.numPoints, this.radius, this.radi);
 	}
 
 	update(deltaTime){
@@ -323,7 +355,6 @@ function loop(now) {
 		}
 
 		// DRAW
-		drawPolygon(width / 2, height / 2, 3);
 		player.draw();
 		for(var i = 0; i < bullets.length; i++){
 			bullets[i].draw();
