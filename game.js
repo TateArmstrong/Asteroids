@@ -6,8 +6,8 @@ var height = canvas.height;
 
 var wDown, aDown, dDown, spaceDown = false;
 var canShoot = true;
-var bullets = [];
-var rocks = [];
+//var rocks = [];
+var gameObjects = [];
 
 // Player ship control variables. 
 const SHIP_SPEED = 0.02;
@@ -20,6 +20,11 @@ const FIRE_RATE_INTERVAL = 250;
 const ROCK_RADIUS = 40; // Controls the size of rocks. 
 const ROCK_SIDES = 12; // Controls the number of sides the rocks have. 
 const ROCK_VARIATION = 20; // Controls how bumpy the rocks are. Weird results if larger than ROCK_RADIUS. 
+
+var mouse = {
+	x: 0,
+	y: 0
+}
 
 function drawSquare(x, y, length, color){
     ctx.fillStyle = color;
@@ -37,9 +42,17 @@ function isPointInCircle(cx, cy, r, px, py){
 	return dist <= r;
 }
 
-var mouse = {
-	x: 0,
-	y: 0
+function resolveCollision(obj1, obj2){
+	// Handle collisions for rocks. 
+	if(obj1 instanceof Rock){
+		if(obj2 instanceof Bullet){
+			if(isPointInCircle(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y)){
+				gameObjects.splice(gameObjects.indexOf(obj1), 1);
+				gameObjects.splice(gameObjects.indexOf(obj2), 1);
+				return;
+			}
+		}
+	}
 }
 
 function drawPolygon(x, y, numPoints, radius) {
@@ -89,16 +102,20 @@ class Bullet {
 
 	deleteOutOfBounds(){
 		if(this.x > width){
-			delete this;
+			gameObjects.splice(gameObjects.indexOf(this), 1);
+			return;
 		}
 		if(this.x < 0){
-			delete this;
+			gameObjects.splice(gameObjects.indexOf(this), 1);
+			return;
 		}
 		if(this.y > height){
-			delete this;
+			gameObjects.splice(gameObjects.indexOf(this), 1);
+			return;
 		}
 		if(this.y < 0){
-			delete this;
+			gameObjects.splice(gameObjects.indexOf(this), 1);
+			return;
 		}
 	}
 
@@ -150,7 +167,7 @@ class Player {
 	}
 
 	shootBullet(){
-		bullets.push(new Bullet(this.x, this.y, this.rotation));
+		gameObjects.push(new Bullet(this.x, this.y, this.rotation));
 	}
 	
 	draw(){
@@ -297,10 +314,11 @@ document.addEventListener("mousemove",
 );
 
 player = new Player(width / 2, height / 2);
+gameObjects.push(player);
 
 // Randomly generates 5 rocks. 
 for(var i = 0; i < 5; i++){
-	rocks.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
+	gameObjects.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
 }
 
 var lastTime;
@@ -320,52 +338,21 @@ function loop(now) {
     	ctx.fillRect(0, 0, width, height);
 
 		// UPDATE
-		player.update(elapsed);
-		// update all the bullets. 
-		for(var i = 0; i < bullets.length; i++){
-			bullets[i].update(elapsed);
-			if(bullets[i].x > width){
-				bullets.splice(i, 1);
-				continue;
-			}
-			if(bullets[i].x < 0){
-				bullets.splice(i, 1);
-				continue;
-			}
-			if(bullets[i].y > height){
-				bullets.splice(i, 1);
-				continue;
-			}
-			if(bullets[i].y < 0){
-				bullets.splice(i, 1);
-				continue;
-			}
-		}
-		for(var i = 0; i < rocks.length; i++){
-			rocks[i].update(elapsed);
+		for(var i = 0; i < gameObjects.length; i++){
+			gameObjects[i].update(elapsed);
 		}
 
-		// Collision Detection
-		for(var i = 0; i < bullets.length; i++){
-			for(var j = 0; j < rocks.length; j++){
-				var bullet = bullets[i];
-				var rock = rocks[j];
-
-				if(isPointInCircle(rock.x, rock.y, rock.radius, bullet.x, bullet.y)){
-					bullets.splice(i, 1);
-					rocks.splice(j, 1);
-					break;
-				}
+		// COLLISION DETECTION
+		for(var i = 0; i < gameObjects.length; i++){
+			for(var j = 0; j < gameObjects.length; j++){
+				resolveCollision(gameObjects[i], gameObjects[j]);
 			}
 		}
 
 		// DRAW
 		player.draw();
-		for(var i = 0; i < bullets.length; i++){
-			bullets[i].draw();
-		}
-		for(var i = 0; i < rocks.length; i++){
-			rocks[i].draw();
+		for(var i = 0; i < gameObjects.length; i++){
+			gameObjects[i].draw();
 		}
 
         lastTime = now;
