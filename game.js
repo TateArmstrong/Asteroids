@@ -17,7 +17,7 @@ const BULLET_SPEED = 1;
 const FIRE_RATE_INTERVAL = 250;
 
 // Rock generation control variables. 
-const ROCK_RADIUS = 40; // Controls the size of rocks. 
+const ROCK_RADIUS = 60; // Controls the size of rocks. 
 const ROCK_SIDES = 12; // Controls the number of sides the rocks have. 
 const ROCK_VARIATION = 20; // Controls how bumpy the rocks are. Weird results if larger than ROCK_RADIUS. 
 
@@ -47,8 +47,29 @@ function resolveCollision(obj1, obj2){
 	if(obj1 instanceof Rock){
 		if(obj2 instanceof Bullet){
 			if(isPointInCircle(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y)){
-				gameObjects.splice(gameObjects.indexOf(obj1), 1);
+				if(obj1.radius <= ROCK_RADIUS * (1 / 3)){
+					gameObjects.splice(gameObjects.indexOf(obj2), 1);
+					gameObjects.splice(gameObjects.indexOf(obj1), 1);
+					return;
+				}
+				if(obj1.radius <= ROCK_RADIUS * (2 / 3)){
+					gameObjects.splice(gameObjects.indexOf(obj2), 1);
+					gameObjects.push(new Rock(obj1.x, obj1.y, 1));
+					gameObjects[gameObjects.length - 1].accel = 0.2;
+					gameObjects.push(new Rock(obj1.x, obj1.y, 1));
+					gameObjects[gameObjects.length - 1].accel = 0.2;
+					gameObjects.push(new Rock(obj1.x, obj1.y, 1));
+					gameObjects.splice(gameObjects.indexOf(obj1), 1);
+					return;
+				}
 				gameObjects.splice(gameObjects.indexOf(obj2), 1);
+				gameObjects.push(new Rock(obj1.x, obj1.y, 2));
+				gameObjects[gameObjects.length - 1].accel = 0.2;
+				gameObjects.push(new Rock(obj1.x, obj1.y, 2));
+				gameObjects[gameObjects.length - 1].accel = 0.2;
+				gameObjects.push(new Rock(obj1.x, obj1.y, 2));
+				gameObjects[gameObjects.length - 1].accel = 0.2;
+				gameObjects.splice(gameObjects.indexOf(obj1), 1);
 				return;
 			}
 		}
@@ -226,21 +247,33 @@ class Player {
 }
 
 class Rock {
-	constructor(x, y, radius = ROCK_RADIUS, numPoints = ROCK_SIDES){
+	constructor(x, y, size = 3){
 		this.x = x;
         this.y = y;
         this.rotation = Math.random() * (Math.PI * 2);
 		this.drawRotation = this.rotation;
 		this.rotationSpeed = (Math.random() * 0.06) - 0.03;
-		this.radius = radius;
 		this.accel = 0.1; 
-		this.numPoints = numPoints;
 		this.radi = []
+		this.size = size;
 
 		this.init();
 	}
 
 	init() {
+		if(this.size === 3){
+			this.radius = ROCK_RADIUS;
+			this.numPoints = ROCK_SIDES;
+		}
+		if(this.size === 2){
+			this.radius = ROCK_RADIUS * (2/3);
+			this.numPoints = ROCK_SIDES * (2/3);
+		}
+		if(this.size === 1){
+			this.radius = ROCK_RADIUS * (1/3);
+			this.numPoints = ROCK_SIDES * (1/3);
+		}
+
 		this.radi.push(this.radius);
 		for(var i = 0; i < this.numPoints - 1; i++){
 			this.radi.push(this.radius + getRndInteger(-ROCK_VARIATION, ROCK_VARIATION));
@@ -317,7 +350,7 @@ player = new Player(width / 2, height / 2);
 gameObjects.push(player);
 
 // Randomly generates 5 rocks. 
-for(var i = 0; i < 5; i++){
+for(var i = 0; i < 3; i++){
 	gameObjects.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
 }
 
