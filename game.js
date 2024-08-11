@@ -31,6 +31,12 @@ function drawSquare(x, y, length, color){
     ctx.fillRect(x, y, length, length);
 }
 
+function drawText(x, y, size, text, color){
+	ctx.fillStyle = color;
+	ctx.font = size + "pt press_start_kregular";
+	ctx.fillText(text, x, y);
+}
+
 function getRndInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
@@ -387,6 +393,7 @@ function loop(now) {
 		for(var i = 0; i < gameObjects.length; i++){
 			gameObjects[i].draw();
 		}
+		drawText(10, 35, 24, "HIGH SCORE:123", "white");
 
         lastTime = now;
     }

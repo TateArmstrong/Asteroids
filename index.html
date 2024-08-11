@@ -4,8 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="preload" href="/fonts/press-start.k-webfont.woff" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="/fonts/press-start.k-webfont.woff2" as="font" type="font/woff2" crossorigin>
     <title>Asteroids</title>
 	<style>
+		@font-face {
+			font-family: 'press_start_kregular';
+			src: url('fonts/press-start.k-webfont.woff2') format('woff2'),
+				url('fonts/press-start.k-webfont.woff') format('woff');
+			font-weight: normal;
+			font-style: normal;
+		}
+
 		html, body {
 			width: 100%;
 			height: 100%;
