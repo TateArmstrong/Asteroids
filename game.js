@@ -79,6 +79,12 @@ function resolveCollision(obj1, obj2){
 				return;
 			}
 		}
+		if(obj2 instanceof Player){
+			if(isPointInCircle(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y)){
+				gameObjects.splice(gameObjects.indexOf(obj2), 1);
+				gameObjects.push(new TextObject((width/2) - 150, height/2, 24, "GAME OVER"));
+			}
+		}
 	}
 }
 
@@ -315,6 +321,24 @@ class Rock {
 	}
 }
 
+class TextObject {
+	constructor(x, y, size = 16, text = "", color = "white"){
+		this.x = x;
+        this.y = y;
+		this.size = size;
+		this.text = text;
+		this.color = color
+	}
+
+	draw(){
+		ctx.fillStyle = this.color;
+		ctx.font = this.size + "pt press_start_kregular";
+		ctx.fillText(this.text, this.x, this.y);
+	}
+
+	update(deltaTime){}
+}
+
 document.addEventListener("keydown", 
 	function(e){
 		switch(e.keyCode){
@@ -389,7 +413,6 @@ function loop(now) {
 		}
 
 		// DRAW
-		player.draw();
 		for(var i = 0; i < gameObjects.length; i++){
 			gameObjects[i].draw();
 		}
