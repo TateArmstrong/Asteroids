@@ -4,10 +4,11 @@ const ctx = canvas.getContext("2d");
 var width = canvas.width;
 var height = canvas.height;
 
-var wDown, aDown, dDown, spaceDown = false;
-var canShoot = true;
-//var rocks = [];
+var wDown, aDown, dDown, spaceDown, fDown = false;
 var gameObjects = [];
+var lives = 3;
+var score = 0;
+var playerCanRespawn = false;
 
 // Player ship control variables. 
 const SHIP_SPEED = 0.02;
@@ -26,6 +27,19 @@ var mouse = {
 	y: 0
 }
 
+function rockHitPlayer(player){
+	if(lives <= 0){
+		gameObjects.splice(gameObjects.indexOf(player), 1);
+		gameObjects.push(new TextObject((width/2) - 150, height/2, 24, "GAME OVER"));
+		return;
+	}
+	else {
+		gameObjects.splice(gameObjects.indexOf(player), 1);
+		gameObjects.push(respawnText);
+		playerCanRespawn = true;
+	}
+}
+
 function drawSquare(x, y, length, color){
     ctx.fillStyle = color;
     ctx.fillRect(x, y, length, length);
@@ -35,6 +49,23 @@ function drawText(x, y, size, text, color){
 	ctx.fillStyle = color;
 	ctx.font = size + "pt press_start_kregular";
 	ctx.fillText(text, x, y);
+}
+
+function drawLives(){
+	for(var i = 0; i < lives; i++){
+		ctx.beginPath();
+		ctx.save();
+		ctx.translate(30 + (i * 45), 75);
+		ctx.moveTo(0, -30);
+		ctx.lineTo(-20, 20);
+		ctx.lineTo(0, 10);
+		ctx.lineTo(20, 20);
+		ctx.lineTo(0, -30);
+		ctx.restore();
+		ctx.strokeStyle = "white";
+		ctx.stroke();
+		ctx.closePath();
+	}
 }
 
 function getRndInteger(min, max) {
@@ -53,6 +84,7 @@ function resolveCollision(obj1, obj2){
 	if(obj1 instanceof Rock){
 		if(obj2 instanceof Bullet){
 			if(isPointInCircle(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y)){
+				score++;
 				if(obj1.radius <= ROCK_RADIUS * (1 / 3)){
 					gameObjects.splice(gameObjects.indexOf(obj2), 1);
 					gameObjects.splice(gameObjects.indexOf(obj1), 1);
@@ -81,8 +113,7 @@ function resolveCollision(obj1, obj2){
 		}
 		if(obj2 instanceof Player){
 			if(isPointInCircle(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y)){
-				gameObjects.splice(gameObjects.indexOf(obj2), 1);
-				gameObjects.push(new TextObject((width/2) - 150, height/2, 24, "GAME OVER"));
+				rockHitPlayer(obj2);
 			}
 		}
 	}
@@ -182,6 +213,7 @@ class Player {
         this.dy = 0;
 		this.accel = SHIP_SPEED;
 		this.rotation = 0;
+		this.canShoot = true;
 	}
 
 	wrapCoords(){
@@ -201,6 +233,10 @@ class Player {
 
 	shootBullet(){
 		gameObjects.push(new Bullet(this.x, this.y, this.rotation));
+	}
+
+	setInvulnerable(){
+
 	}
 	
 	draw(){
@@ -244,10 +280,10 @@ class Player {
 		}
 		if(spaceDown){
 			// Limits the ammout the player can shoot. 
-			if(canShoot){
+			if(this.canShoot){
 				this.shootBullet();
-				canShoot = false;
-				setTimeout(function(){canShoot = true}, FIRE_RATE_INTERVAL);
+				this.canShoot = false;
+				setTimeout(() => {this.canShoot = true}, FIRE_RATE_INTERVAL);
 			}
 		}
 		
@@ -365,6 +401,8 @@ document.addEventListener("keyup",
 				aDown = false; break;
 			case 68: // D
 				dDown = false; break;
+			case 70: // F
+				fDown = true; break;
 		}
 	}
 );
@@ -376,10 +414,12 @@ document.addEventListener("mousemove",
 	}
 );
 
-player = new Player(width / 2, height / 2);
+var respawnText = new TextObject((width/2) - 210, (height/2) + 200, 18, "Press F To Respawn");
+
+var player = new Player(width / 2, height / 2);
 gameObjects.push(player);
 
-// Randomly generates 5 rocks. 
+// Randomly generates 3 rocks. 
 for(var i = 0; i < 3; i++){
 	gameObjects.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
 }
@@ -405,6 +445,20 @@ function loop(now) {
 			gameObjects[i].update(elapsed);
 		}
 
+		// Detect player input. 
+		if(playerCanRespawn && fDown){
+			console.log('got here');
+			lives--;
+			fDown = false;
+			playerCanRespawn = false;
+			player = new Player(width / 2, height / 2);
+			gameObjects.push(player);
+			gameObjects.splice(gameObjects.indexOf(respawnText), 1);
+		}
+		else {
+			fDown = false;
+		}
+
 		// COLLISION DETECTION
 		for(var i = 0; i < gameObjects.length; i++){
 			for(var j = 0; j < gameObjects.length; j++){
@@ -416,7 +470,8 @@ function loop(now) {
 		for(var i = 0; i < gameObjects.length; i++){
 			gameObjects[i].draw();
 		}
-		drawText(10, 35, 24, "HIGH SCORE:123", "white");
+		drawLives();
+		drawText(10, 35, 24, "SCORE: " + score, "white");
 
         lastTime = now;
     }
