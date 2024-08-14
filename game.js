@@ -253,6 +253,24 @@ class Player {
 		ctx.strokeStyle = "white";
 		ctx.stroke();
 		ctx.closePath();
+
+		if(wDown){
+			ctx.beginPath();
+			ctx.save();
+			ctx.translate(this.x, this.y);
+			ctx.rotate(this.rotation);
+			ctx.moveTo(0, 17);
+			ctx.lineTo(-15, 25);
+			ctx.lineTo(0, Math.sin(performance.now() * 0.05) * 10 + 40);
+			ctx.lineTo(15, 25);
+			ctx.lineTo(0, 17);
+			ctx.restore();
+			ctx.strokeStyle = "white";
+			ctx.fillStyle = "white";
+			ctx.stroke();
+			ctx.fill();
+			ctx.closePath();
+		}
 	}
 	
 	update(deltaTime){
@@ -447,7 +465,6 @@ function loop(now) {
 
 		// Detect player input. 
 		if(playerCanRespawn && fDown){
-			console.log('got here');
 			lives--;
 			fDown = false;
 			playerCanRespawn = false;
