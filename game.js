@@ -28,6 +28,13 @@ var mouse = {
 }
 
 function rockHitPlayer(player){
+	// TO-DO: Make like a for loop or something with random values. 
+	gameObjects.push(new ShipPart(player.x, player.y-20, player.dx, player.dy));
+	gameObjects.push(new ShipPart(player.x+20, player.y, player.dx, player.dy));
+	gameObjects.push(new ShipPart(player.x, player.y, player.dx, player.dy));
+	gameObjects.push(new ShipPart(player.x, player.y+20, player.dx, player.dy));
+	gameObjects.push(new ShipPart(player.x, player.y, player.dx, player.dy));
+	gameObjects.push(new ShipPart(player.x-20, player.y, player.dx, player.dy));
 	if(lives <= 0){
 		gameObjects.splice(gameObjects.indexOf(player), 1);
 		gameObjects.push(new TextObject((width/2) - 150, height/2, 24, "GAME OVER"));
@@ -91,6 +98,7 @@ function resolveCollision(obj1, obj2){
 					return;
 				}
 				if(obj1.radius <= ROCK_RADIUS * (2 / 3)){
+					// TO-DO: Make like a for loop or something with random values. 
 					gameObjects.splice(gameObjects.indexOf(obj2), 1);
 					gameObjects.push(new Rock(obj1.x, obj1.y, 1));
 					gameObjects[gameObjects.length - 1].accel = 0.2;
@@ -100,6 +108,7 @@ function resolveCollision(obj1, obj2){
 					gameObjects.splice(gameObjects.indexOf(obj1), 1);
 					return;
 				}
+				// TO-DO: Make like a for loop or something with random values. 
 				gameObjects.splice(gameObjects.indexOf(obj2), 1);
 				gameObjects.push(new Rock(obj1.x, obj1.y, 2));
 				gameObjects[gameObjects.length - 1].accel = 0.2;
@@ -233,10 +242,6 @@ class Player {
 
 	shootBullet(){
 		gameObjects.push(new Bullet(this.x, this.y, this.rotation));
-	}
-
-	setInvulnerable(){
-
 	}
 	
 	draw(){
@@ -391,6 +396,63 @@ class TextObject {
 	}
 
 	update(deltaTime){}
+}
+
+class ShipPart {
+	constructor(x, y, dx, dy){
+		this.x = x;
+        this.y = y;
+        this.rotation = Math.atan2(dx, -dy) + (Math.random() - 0.5);
+		this.drawRotation = this.rotation;
+		this.rotationSpeed = (Math.random() * 0.3) - 0.1;
+		this.accel = (Math.random() * 0.1) + 0.1;
+		this.size = getRndInteger(10, 20);
+
+		this.init();
+	}
+
+	init(){
+		setTimeout(() => {
+			gameObjects.splice(gameObjects.indexOf(this), 1);
+		}, 2000);
+	}
+
+	wrapCoords(){
+		if(this.x > width){
+			this.x = 0;
+		}
+		if(this.x < 0){
+			this.x = width;
+		}
+		if(this.y > height){
+			this.y = 0;
+		}
+		if(this.y < 0){
+			this.y = height;
+		}
+	}
+
+	draw(){
+		ctx.beginPath();
+		ctx.save();
+		ctx.translate(this.x, this.y);
+		ctx.rotate(this.drawRotation);
+		ctx.moveTo(0, -this.size);
+		ctx.lineTo(0, this.size);
+		ctx.restore();
+		ctx.strokeStyle = "white";
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	update(deltaTime){
+		this.x += Math.sin(this.rotation) * this.accel * deltaTime;
+		this.y += -Math.cos(this.rotation) * this.accel * deltaTime;
+
+		this.drawRotation += this.rotationSpeed;
+
+		this.wrapCoords();
+	}
 }
 
 document.addEventListener("keydown", 
