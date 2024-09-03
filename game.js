@@ -19,6 +19,7 @@ const FIRE_RATE_INTERVAL = 250;
 const ROCKET_SOUND_INTERVAL = 100;
 
 // Rock generation control variables. 
+const INITAL_ROCKS = 3; // Controls the initial amount of rocks that spawn. 
 const ROCK_RADIUS = 60; // Controls the size of rocks. 
 const ROCK_SIDES = 12; // Controls the number of sides the rocks have. 
 const ROCK_VARIATION = 20; // Controls how bumpy the rocks are. Weird results if larger than ROCK_RADIUS. 
@@ -546,8 +547,18 @@ var player = new Player(width / 2, height / 2);
 gameObjects.push(player);
 
 // Randomly generates 3 rocks. 
-for(var i = 0; i < 3; i++){
-	gameObjects.push(new Rock(getRndInteger(0, width), getRndInteger(0, height)));
+var rocksAdded = 0;
+while(rocksAdded < INITAL_ROCKS){
+	var x = getRndInteger(0, width);
+	var y = getRndInteger(0, height);
+
+	if(isPointInCircle(width/2, height/2, 200, x, y)){
+		continue;
+	}
+	else {
+		gameObjects.push(new Rock(x, y));
+		rocksAdded++;
+	}
 }
 
 var lastTime;
