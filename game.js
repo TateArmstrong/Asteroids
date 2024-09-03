@@ -16,6 +16,7 @@ const MAX_SHIP_SPEED = 10;
 const SHIP_ROTATION_SPEED = 0.005;
 const BULLET_SPEED = 1;
 const FIRE_RATE_INTERVAL = 250;
+const ROCKET_SOUND_INTERVAL = 100;
 
 // Rock generation control variables. 
 const ROCK_RADIUS = 60; // Controls the size of rocks. 
@@ -36,11 +37,13 @@ function rockHitPlayer(player){
 	gameObjects.push(new ShipPart(player.x, player.y, player.dx, player.dy));
 	gameObjects.push(new ShipPart(player.x-20, player.y, player.dx, player.dy));
 	if(lives <= 0){
+		audioManager.playSound("death");
 		gameObjects.splice(gameObjects.indexOf(player), 1);
 		gameObjects.push(new TextObject((width/2) - 150, height/2, 24, "GAME OVER"));
 		return;
 	}
 	else {
+		audioManager.playSound("hurt");
 		gameObjects.splice(gameObjects.indexOf(player), 1);
 		gameObjects.push(respawnText);
 		playerCanRespawn = true;
@@ -91,6 +94,7 @@ function resolveCollision(obj1, obj2){
 	if(obj1 instanceof Rock){
 		if(obj2 instanceof Bullet){
 			if(isPointInCircle(obj1.x, obj1.y, obj1.radius, obj2.x, obj2.y)){
+				this.audioManager.playSound("break");
 				score++;
 				if(obj1.radius <= ROCK_RADIUS * (1 / 3)){
 					gameObjects.splice(gameObjects.indexOf(obj2), 1);
@@ -241,6 +245,7 @@ class Player {
 	}
 
 	shootBullet(){
+		audioManager.playSound("shoot");
 		gameObjects.push(new Bullet(this.x, this.y, this.rotation));
 	}
 	
@@ -284,6 +289,7 @@ class Player {
 		//this.rotation = Math.atan2(mouse.y - this.y, mouse.x - this.x) + Math.PI/2;
 
 		if(wDown){
+			audioManager.playSound("rocket");
 			var nor = Math.sqrt(Math.pow(this.dx, 2) + Math.pow(this.dy, 2));
 			// If the velocity is over 5, set it back to 5. 
 			if(Math.abs(nor) > MAX_SHIP_SPEED){
@@ -455,6 +461,44 @@ class ShipPart {
 	}
 }
 
+class AudioManager {
+	constructor (){
+		this.gameMuted = false;
+		this.canPlayRocketSound = true;
+		this.playerShoot = new Audio("./sounds/shoot.wav");
+		this.rocket = new Audio("./sounds/rocket.wav");
+		this.break = new Audio("./sounds/break.wav");
+		this.hurt = new Audio("./sounds/hurt.wav");
+		this.death = new Audio("./sounds/death.wav");
+	}
+
+	playSound(sound){
+		if(this.gameMuted){return;}
+		switch(sound){
+			case "shoot":
+				this.playerShoot.currentTime = 0;
+				this.playerShoot.play(); break;
+			case "rocket": 
+				if(this.canPlayRocketSound){
+					this.rocket.currentTime = 0;
+					this.rocket.play();
+					this.canPlayRocketSound = false;
+					setTimeout(() => {this.canPlayRocketSound = true}, ROCKET_SOUND_INTERVAL);
+				}
+				break;
+			case "break":
+				this.break.currentTime = 0;
+				this.break.play(); break;
+			case "hurt":
+				this.hurt.currentTime = 0;
+				this.hurt.play(); break;
+			case "death":
+				this.death.currentTime = 0;
+				this.death.play(); break;
+		}
+	}
+}
+
 document.addEventListener("keydown", 
 	function(e){
 		switch(e.keyCode){
@@ -495,6 +539,8 @@ document.addEventListener("mousemove",
 );
 
 var respawnText = new TextObject((width/2) - 210, (height/2) + 200, 18, "Press F To Respawn");
+
+var audioManager = new AudioManager();
 
 var player = new Player(width / 2, height / 2);
 gameObjects.push(player);
