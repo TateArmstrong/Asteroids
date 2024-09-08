@@ -21,7 +21,7 @@ const FIRE_RATE_INTERVAL = 250;
 const ROCKET_SOUND_INTERVAL = 100;
 
 // Rock generation control variables. 
-const INITAL_ROCKS = 0; // Controls the initial amount of rocks that spawn. 
+const INITAL_ROCKS = 3; // Controls the initial amount of rocks that spawn. 
 const ROCK_RADIUS = 60; // Controls the size of rocks. 
 const ROCK_SIDES = 12; // Controls the number of sides the rocks have. 
 const ROCK_VARIATION = 20; // Controls how bumpy the rocks are. Weird results if larger than ROCK_RADIUS. 
