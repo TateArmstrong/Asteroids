@@ -1,6 +1,8 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+const muteButton = document.getElementById("mute-button");
+
 var width = canvas.width;
 var height = canvas.height;
 
@@ -19,7 +21,7 @@ const FIRE_RATE_INTERVAL = 250;
 const ROCKET_SOUND_INTERVAL = 100;
 
 // Rock generation control variables. 
-const INITAL_ROCKS = 3; // Controls the initial amount of rocks that spawn. 
+const INITAL_ROCKS = 0; // Controls the initial amount of rocks that spawn. 
 const ROCK_RADIUS = 60; // Controls the size of rocks. 
 const ROCK_SIDES = 12; // Controls the number of sides the rocks have. 
 const ROCK_VARIATION = 20; // Controls how bumpy the rocks are. Weird results if larger than ROCK_RADIUS. 
@@ -498,6 +500,11 @@ class AudioManager {
 				this.death.play(); break;
 		}
 	}
+
+	toggleMute(){
+		this.gameMuted = !this.gameMuted;
+		muteButton.children[0].src = this.gameMuted ? "icons/mute_icon.svg" : "icons/volume_icon.svg";
+	}
 }
 
 document.addEventListener("keydown", 
@@ -519,7 +526,10 @@ document.addEventListener("keyup",
 	function(e){
 		switch(e.keyCode){
 			case 32: // SPACE
-				spaceDown = false; break;
+				spaceDown = false;
+				// Mute button might toggle if this is not called. 
+				e.preventDefault();
+				break;
 			case 87: // W
 				wDown = false; break;
 			case 65: // A

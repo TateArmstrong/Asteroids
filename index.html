@@ -30,10 +30,31 @@
 		#game {
 			border: 2px solid black;
 		}
-	</style>
-  </head>
-  <body>
-	<canvas width="1000" height="750" id="game"></canvas>
-	<script src="game.js"></script>
-  </body>
+
+        #mute-button {
+            background: none;
+            color: inherit;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+            outline: inherit;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #mute-button > img {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+    </style>
+    </head>
+    <body>
+        <canvas width="1000" height="750" id="game"></canvas>
+        <button id="mute-button" onclick="audioManager.toggleMute()">
+            <img src="icons/volume_icon.svg" alt="Volume Icon Button" />
+        </button>
+        <script src="game.js"></script>
+    </body>
 </html>
